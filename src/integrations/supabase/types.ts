@@ -14,16 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          location: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          location?: string | null
+          title: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      complaints: {
+        Row: {
+          address: string | null
+          category: string | null
+          created_at: string
+          department: string | null
+          document_url: string | null
+          generated_complaint: string | null
+          id: string
+          image_url: string | null
+          latitude: number | null
+          longitude: number | null
+          priority: string | null
+          raw_description: string
+          required_documents: string[] | null
+          resolution_estimate: string | null
+          status: string
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          created_at?: string
+          department?: string | null
+          document_url?: string | null
+          generated_complaint?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          priority?: string | null
+          raw_description: string
+          required_documents?: string[] | null
+          resolution_estimate?: string | null
+          status?: string
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          created_at?: string
+          department?: string | null
+          document_url?: string | null
+          generated_complaint?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          priority?: string | null
+          raw_description?: string
+          required_documents?: string[] | null
+          resolution_estimate?: string | null
+          status?: string
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      schemes: {
+        Row: {
+          created_at: string
+          description: string
+          eligibility: string | null
+          id: string
+          official_link: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          eligibility?: string | null
+          id?: string
+          official_link?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          eligibility?: string | null
+          id?: string
+          official_link?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "citizen" | "officer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +322,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["citizen", "officer"],
+    },
   },
 } as const
