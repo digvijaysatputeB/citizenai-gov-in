@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SchemesRouteImport } from './routes/schemes'
+import { Route as AuthenticatedOfficerRouteImport } from './routes/_authenticated/officer'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedTrackRouteImport } from './routes/_authenticated/track'
@@ -42,6 +43,11 @@ const SchemesRoute = SchemesRouteImport.update({
   path: '/schemes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedOfficerRoute = AuthenticatedOfficerRouteImport.update({
+  id: '/officer',
+  path: '/officer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/schemes': typeof SchemesRoute
+  '/officer': typeof AuthenticatedOfficerRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/report': typeof AuthenticatedReportRoute
   '/track': typeof AuthenticatedTrackRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/schemes': typeof SchemesRoute
+  '/officer': typeof AuthenticatedOfficerRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/report': typeof AuthenticatedReportRoute
   '/track': typeof AuthenticatedTrackRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/schemes': typeof SchemesRoute
+  '/_authenticated/officer': typeof AuthenticatedOfficerRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/track': typeof AuthenticatedTrackRoute
@@ -90,9 +99,24 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/alerts' | '/auth' | '/schemes' | '/profile' | '/report' | '/track'
+    | '/'
+    | '/alerts'
+    | '/auth'
+    | '/schemes'
+    | '/officer'
+    | '/profile'
+    | '/report'
+    | '/track'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alerts' | '/auth' | '/schemes' | '/profile' | '/report' | '/track'
+  to:
+    | '/'
+    | '/alerts'
+    | '/auth'
+    | '/schemes'
+    | '/officer'
+    | '/profile'
+    | '/report'
+    | '/track'
   id:
     | '__root__'
     | '/'
@@ -100,6 +124,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/auth'
     | '/schemes'
+    | '/_authenticated/officer'
     | '/_authenticated/profile'
     | '/_authenticated/report'
     | '/_authenticated/track'
@@ -150,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchemesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/officer': {
+      id: '/_authenticated/officer'
+      path: '/officer'
+      fullPath: '/officer'
+      preLoaderRoute: typeof AuthenticatedOfficerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -175,12 +207,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedOfficerRoute: typeof AuthenticatedOfficerRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedTrackRoute: typeof AuthenticatedTrackRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedOfficerRoute: AuthenticatedOfficerRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedTrackRoute: AuthenticatedTrackRoute,
@@ -199,3 +233,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
