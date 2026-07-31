@@ -68,27 +68,28 @@ export function Navbar() {
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-                <span className="relative">{item.label}</span>
+                <span className="relative">{t(item.labelKey as TKey)}</span>
               </Link>
             );
           })}
         </nav>
 
         <div className="flex items-center gap-1.5">
+          <LanguageSwitcher />
           <ThemeToggle />
           {session ? (
             <>
               <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                <Link to="/profile">Profile</Link>
+                <Link to="/profile">{t("nav.profile")}</Link>
               </Button>
-              <Button variant="outline" size="icon" aria-label="Sign out" onClick={signOut}>
+              <Button variant="outline" size="icon" aria-label={t("nav.signOut")} onClick={signOut}>
                 <LogOut className="size-4" />
               </Button>
             </>
           ) : (
             <Button asChild size="sm" className="rounded-full">
               <Link to="/auth">
-                <ShieldCheck className="size-4" /> Sign in
+                <ShieldCheck className="size-4" /> {t("nav.signIn")}
               </Link>
             </Button>
           )}
@@ -96,7 +97,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             className="lg:hidden"
-            aria-label="Menu"
+            aria-label={t("nav.menu")}
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
@@ -107,14 +108,14 @@ export function Navbar() {
       {open && (
         <div className="border-t border-border/60 bg-background/95 px-4 py-3 lg:hidden">
           <div className="flex flex-col">
-            {[...navItems, { to: "/profile", label: "Profile" } as const].map((item) => (
+            {[...navItems, { to: "/profile", labelKey: "nav.profile" } as const].map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                {item.label}
+                {t(item.labelKey as TKey)}
               </Link>
             ))}
           </div>
