@@ -204,6 +204,7 @@ function ReportPage() {
     setAddress("");
     setCoords(null);
     setImageUrl(null);
+    setInterim("");
   };
 
   return (
@@ -408,7 +409,7 @@ function ReportPage() {
                 </Card>
               )}
               <Card className="glass-card rounded-3xl border-0 p-6">
-                <h2 className="text-sm font-semibold">What happens next</h2>
+                <h2 className="text-sm font-semibold">{t("report.next")}</h2>
                 <ol className="mt-3 space-y-3 text-sm text-muted-foreground">
                   <li>1. Your words are analysed and classified into one of 13 civic categories.</li>
                   <li>2. A priority level and responsible department are assigned.</li>
