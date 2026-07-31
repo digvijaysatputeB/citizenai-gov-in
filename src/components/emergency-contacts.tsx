@@ -148,7 +148,7 @@ export function EmergencyContactCard({
   return (
     <Card
       className={cn(
-        "glass-card flex flex-col gap-3 rounded-3xl border-0",
+        "glass-card flex h-full flex-col gap-3 rounded-3xl border-0",
         compact ? "p-4" : "p-5",
       )}
     >
