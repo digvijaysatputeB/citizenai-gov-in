@@ -60,8 +60,10 @@ const AGENT_STAGES = [
 function ReportPage() {
   const callGenerate = useServerFn(generateComplaint);
   const fileInput = useRef<HTMLInputElement>(null);
+  const { t, speechLocale } = useI18n();
 
   const [description, setDescription] = useState("");
+  const [interim, setInterim] = useState("");
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -71,6 +73,38 @@ function ReportPage() {
   const [result, setResult] = useState<Complaint | null>(null);
 
   const submitting = stage >= 0;
+
+  const {
+    supported: voiceSupported,
+    listening,
+    toggle: toggleVoice,
+  } = useSpeechToText({
+    lang: speechLocale,
+    onTranscript: (finalText, interimText) => {
+      setInterim(interimText);
+      if (finalText) {
+        setDescription((prev) =>
+          `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${finalText.trim()}`.slice(0, 4000),
+        );
+      }
+    },
+    onError: (kind) => {
+      setInterim("");
+      if (kind === "unsupported") toast.error(t("report.voiceUnsupported"));
+      else if (kind === "denied") toast.error(t("report.micDenied"));
+      else toast.error("Voice input stopped unexpectedly.");
+    },
+  });
+
+  const onMicClick = () => {
+    if (!voiceSupported) {
+      toast.error(t("report.voiceUnsupported"));
+      return;
+    }
+    if (listening) setInterim("");
+    toggleVoice();
+  };
+
 
   const useMyLocation = () => {
     if (!("geolocation" in navigator)) {
