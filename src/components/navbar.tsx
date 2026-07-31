@@ -4,22 +4,26 @@ import { motion } from "framer-motion";
 import { LandPlot, LogOut, Menu, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useSession } from "@/hooks/useAuth";
+import { useI18n, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const links = [
-  { to: "/", label: "Home" },
-  { to: "/report", label: "Report Issue" },
-  { to: "/track", label: "Track Complaint" },
-  { to: "/alerts", label: "Gov Alerts" },
-  { to: "/schemes", label: "Gov Schemes" },
+  { to: "/", labelKey: "nav.home" },
+  { to: "/report", labelKey: "nav.report" },
+  { to: "/track", labelKey: "nav.track" },
+  { to: "/alerts", labelKey: "nav.alerts" },
+  { to: "/schemes", labelKey: "nav.schemes" },
+  { to: "/emergency", labelKey: "nav.emergency" },
 ] as const;
 
 export function Navbar() {
   const { session } = useSession();
   const { isOfficer } = useProfile(session?.user?.id);
+  const { t } = useI18n();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
@@ -30,7 +34,10 @@ export function Navbar() {
     navigate({ to: "/auth", replace: true });
   };
 
-  const navItems = [...links, ...(isOfficer ? [{ to: "/officer", label: "Officer" } as const] : [])];
+  const navItems = [
+    ...links,
+    ...(isOfficer ? [{ to: "/officer", labelKey: "nav.officer" } as const] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-xl">
