@@ -7,6 +7,8 @@ import {
   Loader2,
   LocateFixed,
   MessageSquareText,
+  Mic,
+  MicOff,
   RotateCcw,
   Send,
   Sparkles,
@@ -22,6 +24,9 @@ import { PageHeading, PageShell } from "@/components/page-shell";
 import { ReportPreviewCard } from "@/components/report-preview-card";
 import { supabase } from "@/integrations/supabase/client";
 import { generateComplaint } from "@/lib/complaints.functions";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { osmEmbedUrl, type Complaint } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/report")({
@@ -55,8 +60,10 @@ const AGENT_STAGES = [
 function ReportPage() {
   const callGenerate = useServerFn(generateComplaint);
   const fileInput = useRef<HTMLInputElement>(null);
+  const { t, speechLocale } = useI18n();
 
   const [description, setDescription] = useState("");
+  const [interim, setInterim] = useState("");
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -66,6 +73,38 @@ function ReportPage() {
   const [result, setResult] = useState<Complaint | null>(null);
 
   const submitting = stage >= 0;
+
+  const {
+    supported: voiceSupported,
+    listening,
+    toggle: toggleVoice,
+  } = useSpeechToText({
+    lang: speechLocale,
+    onTranscript: (finalText, interimText) => {
+      setInterim(interimText);
+      if (finalText) {
+        setDescription((prev) =>
+          `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${finalText.trim()}`.slice(0, 4000),
+        );
+      }
+    },
+    onError: (kind) => {
+      setInterim("");
+      if (kind === "unsupported") toast.error(t("report.voiceUnsupported"));
+      else if (kind === "denied") toast.error(t("report.micDenied"));
+      else toast.error("Voice input stopped unexpectedly.");
+    },
+  });
+
+  const onMicClick = () => {
+    if (!voiceSupported) {
+      toast.error(t("report.voiceUnsupported"));
+      return;
+    }
+    if (listening) setInterim("");
+    toggleVoice();
+  };
+
 
   const useMyLocation = () => {
     if (!("geolocation" in navigator)) {
@@ -165,14 +204,15 @@ function ReportPage() {
     setAddress("");
     setCoords(null);
     setImageUrl(null);
+    setInterim("");
   };
 
   return (
     <PageShell>
       <PageHeading
         icon={<MessageSquareText className="size-5" />}
-        title="Report an Issue"
-        subtitle="Tell us what's wrong. Six AI agents turn it into a formal, department-ready complaint."
+        title={t("report.title")}
+        subtitle={t("report.subtitle")}
       />
 
       <AnimatePresence mode="wait">
@@ -181,21 +221,54 @@ function ReportPage() {
             <ReportPreviewCard complaint={result} />
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-full" onClick={reset}>
-                <RotateCcw className="size-4" /> Report another issue
+                <RotateCcw className="size-4" /> {t("report.another")}
               </Button>
             </div>
           </motion.div>
         ) : (
           <motion.div key="form" exit={{ opacity: 0 }} className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
             <Card className="glass-card rounded-3xl border-0 p-6">
-              <Label htmlFor="description" className="text-sm font-semibold">
-                Describe your issue
-              </Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="description" className="text-sm font-semibold">
+                  {t("report.describe")}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <AnimatePresence>
+                    {listening && (
+                      <motion.span
+                        initial={{ opacity: 0, x: 6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 6 }}
+                        className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive"
+                      >
+                        <span className="relative flex size-2">
+                          <span className="absolute inline-flex size-full animate-ping rounded-full bg-destructive opacity-75" />
+                          <span className="relative inline-flex size-2 rounded-full bg-destructive" />
+                        </span>
+                        {t("report.listening")}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant={listening ? "destructive" : "outline"}
+                    className={cn("size-9 rounded-full", listening && "shadow-soft")}
+                    aria-label={listening ? t("report.stopListening") : t("report.speak")}
+                    title={listening ? t("report.stopListening") : t("report.speak")}
+                    aria-pressed={listening}
+                    onClick={onMicClick}
+                    disabled={submitting}
+                  >
+                    {listening ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+                  </Button>
+                </div>
+              </div>
               <Textarea
                 id="description"
-                value={description}
+                value={listening && interim ? `${description}${description ? " " : ""}${interim}` : description}
                 onChange={(e) => setDescription(e.target.value.slice(0, 4000))}
-                placeholder="Describe your issue… e.g. The street light outside house no. 42 has been off for two weeks and the road is unsafe at night."
+                placeholder={t("report.placeholder")}
                 className="mt-3 min-h-44 resize-y rounded-2xl bg-background/70 text-sm leading-relaxed"
                 disabled={submitting}
               />
@@ -205,13 +278,13 @@ function ReportPage() {
 
               <div className="mt-4 space-y-2">
                 <Label htmlFor="address" className="text-sm font-semibold">
-                  Address / landmark
+                  {t("report.address")}
                 </Label>
                 <Input
                   id="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value.slice(0, 400))}
-                  placeholder="Street, area, city"
+                  placeholder={t("report.addressPlaceholder")}
                   className="rounded-xl bg-background/70"
                   disabled={submitting}
                 />
@@ -237,7 +310,7 @@ function ReportPage() {
                   disabled={uploading || submitting}
                 >
                   {uploading ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
-                  Upload image
+                  {t("report.upload")}
                 </Button>
                 <Button
                   type="button"
@@ -251,7 +324,7 @@ function ReportPage() {
                   ) : (
                     <LocateFixed className="size-4" />
                   )}
-                  Use current location
+                  {t("report.location")}
                 </Button>
                 <Button
                   type="button"
@@ -260,9 +333,10 @@ function ReportPage() {
                   disabled={submitting || uploading}
                 >
                   {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                  Generate & file report
+                  {t("report.submit")}
                 </Button>
               </div>
+
 
               <AnimatePresence>
                 {submitting && (
@@ -335,7 +409,7 @@ function ReportPage() {
                 </Card>
               )}
               <Card className="glass-card rounded-3xl border-0 p-6">
-                <h2 className="text-sm font-semibold">What happens next</h2>
+                <h2 className="text-sm font-semibold">{t("report.next")}</h2>
                 <ol className="mt-3 space-y-3 text-sm text-muted-foreground">
                   <li>1. Your words are analysed and classified into one of 13 civic categories.</li>
                   <li>2. A priority level and responsible department are assigned.</li>

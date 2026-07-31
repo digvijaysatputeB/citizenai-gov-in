@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { Navbar } from "@/components/navbar";
+import { EmergencyWidget } from "@/components/emergency-widget";
 
 export function PageShell({
   children,
@@ -25,6 +26,7 @@ export function PageShell({
       <footer className="border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
         Citizen Connect AI — Your AI-Powered Public Service Assistant
       </footer>
+      <EmergencyWidget />
     </div>
   );
 }
