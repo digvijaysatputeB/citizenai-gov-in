@@ -101,7 +101,7 @@ export const EMERGENCY_CONTACTS: EmergencyContact[] = [
 
 const toneStyles: Record<EmergencyContact["tone"], string> = {
   critical: "bg-destructive/10 text-destructive",
-  urgent: "bg-warning-soft text-warning",
+  urgent: "bg-warning/15 text-warning",
   support: "bg-primary-soft text-primary",
 };
 
