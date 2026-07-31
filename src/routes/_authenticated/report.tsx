@@ -7,6 +7,8 @@ import {
   Loader2,
   LocateFixed,
   MessageSquareText,
+  Mic,
+  MicOff,
   RotateCcw,
   Send,
   Sparkles,
@@ -22,6 +24,9 @@ import { PageHeading, PageShell } from "@/components/page-shell";
 import { ReportPreviewCard } from "@/components/report-preview-card";
 import { supabase } from "@/integrations/supabase/client";
 import { generateComplaint } from "@/lib/complaints.functions";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { osmEmbedUrl, type Complaint } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/report")({
