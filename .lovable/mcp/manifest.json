@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://xbtyfibpnkdxzgviuagp.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "citizen-connect-ai",
+      "version": "0.1.0",
+      "title": "Citizen Connect AI"
+    },
+    "tools": [
+      {
+        "name": "list_complaints",
+        "title": "List complaints",
+        "description": "List civic complaints visible to the signed-in user (own complaints for citizens, all complaints for officers). Optionally filter by status or category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "Filter by status, e.g. Pending, In Progress, Resolved, Rejected.",
+              "type": "string"
+            },
+            "category": {
+              "description": "Filter by category, e.g. Road, Water, Garbage.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_complaint",
+        "title": "Get complaint",
+        "description": "Fetch the full detail of a single complaint by id, including the AI-generated formal complaint letter.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Complaint id (uuid)."
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_complaint",
+        "title": "File a complaint",
+        "description": "File a new civic complaint for the signed-in user. Provide the raw description; title, category, department and priority are optional refinements.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "raw_description": {
+              "type": "string",
+              "minLength": 5,
+              "description": "The citizen's description of the issue."
+            },
+            "title": {
+              "description": "Short title for the complaint.",
+              "type": "string"
+            },
+            "category": {
+              "description": "One of: Road, Water, Electricity, Street Lights, Garbage, Drainage, Illegal Construction, Traffic, Cyber Crime, Police, Corruption, Gov Schemes, Other.",
+              "type": "string"
+            },
+            "department": {
+              "description": "Responsible government department.",
+              "type": "string"
+            },
+            "priority": {
+              "description": "Low, Medium, High or Critical.",
+              "type": "string"
+            },
+            "address": {
+              "description": "Human readable location of the issue.",
+              "type": "string"
+            },
+            "latitude": {
+              "description": "Latitude of the issue location.",
+              "type": "number"
+            },
+            "longitude": {
+              "description": "Longitude of the issue location.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "raw_description"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_complaint_status",
+        "title": "Update complaint status",
+        "description": "Update the status of a complaint. Only government officers are permitted to do this; citizen accounts are rejected by the database.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Complaint id (uuid)."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Pending",
+                "In Progress",
+                "Resolved",
+                "Rejected"
+              ],
+              "description": "New status for the complaint."
+            }
+          },
+          "required": [
+            "id",
+            "status"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_alerts",
+        "title": "List government alerts",
+        "description": "List active public government alerts and advisories published in the app.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "Max rows to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_schemes",
+        "title": "List government schemes",
+        "description": "List government welfare schemes with eligibility details and official links.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Optional text to match against scheme titles.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

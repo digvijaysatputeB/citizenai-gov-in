@@ -44,7 +44,15 @@ const credentials = z.object({
 function AuthPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
-  const target = search.redirect && search.redirect.startsWith("/") ? search.redirect : "/track";
+  const target =
+    search.redirect && search.redirect.startsWith("/") && !search.redirect.startsWith("//")
+      ? search.redirect
+      : "/track";
+  // The target may carry a query string (e.g. the OAuth consent URL), so navigate by href.
+  const goToTarget = () => {
+    if (target.includes("?")) window.location.replace(target);
+    else navigate({ to: target, replace: true });
+  };
 
   const [loading, setLoading] = useState<"idle" | "email" | "google">("idle");
 
@@ -67,7 +75,7 @@ function AuthPage() {
           email: parsed.data.email,
           password: parsed.data.password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: new URL(target, window.location.origin).toString(),
             data: { name, phone },
           },
         });
@@ -78,7 +86,7 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Welcome back");
       }
-      navigate({ to: target, replace: true });
+      goToTarget();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
@@ -89,7 +97,7 @@ function AuthPage() {
   const googleSignIn = async () => {
     setLoading("google");
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: new URL(target, window.location.origin).toString(),
     });
     if (result.error) {
       toast.error("Google sign-in failed. Please try again.");
@@ -97,7 +105,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: target, replace: true });
+    goToTarget();
   };
 
   return (
