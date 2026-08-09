@@ -75,7 +75,7 @@ function AuthPage() {
           email: parsed.data.email,
           password: parsed.data.password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: new URL(target, window.location.origin).toString(),
             data: { name, phone },
           },
         });
